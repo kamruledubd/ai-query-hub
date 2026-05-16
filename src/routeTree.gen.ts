@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSubmitQueryRouteImport } from './routes/api/submit-query'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSubmitQueryRoute = ApiSubmitQueryRouteImport.update({
+  id: '/api/submit-query',
+  path: '/api/submit-query',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/submit-query'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/submit-query'
+  id: '__root__' | '/' | '/api/submit-query'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiSubmitQueryRoute: typeof ApiSubmitQueryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/submit-query': {
+      id: '/api/submit-query'
+      path: '/api/submit-query'
+      fullPath: '/api/submit-query'
+      preLoaderRoute: typeof ApiSubmitQueryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiSubmitQueryRoute: ApiSubmitQueryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

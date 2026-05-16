@@ -21,8 +21,7 @@ export const Route = createFileRoute("/")({
   }),
 });
 
-const WEBHOOK_URL =
-  "https://n8n.srv1106977.hstgr.cloud/webhook/31cd9d1b-95ea-4383-b8cc-2366eb936b2a";
+const WEBHOOK_URL = "/api/submit-query";
 
 const MAX_QUERY = 1000;
 
