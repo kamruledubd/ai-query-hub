@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 const WEBHOOK_URL =
-  "https://n8n.srv1106977.hstgr.cloud/webhook/31cd9d1b-95ea-4383-b8cc-2366eb936b2a";
+  "https://n8n.srv1106977.hstgr.cloud/webhook-test/31cd9d1b-95ea-4383-b8cc-2366eb936b2a";
 
 export const Route = createFileRoute("/api/submit-query")({
   server: {
