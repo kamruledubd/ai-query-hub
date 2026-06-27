@@ -80,6 +80,10 @@ function Index() {
         generateResponse({ data: { query: values.query } }),
       ]);
 
+      if (aiRes.status === "fulfilled") {
+        setAiResponse(aiRes.value.response);
+      }
+
       if (webhookRes.status === "fulfilled" && webhookRes.value.ok) {
         toast.success("Query submitted successfully", {
           description:
@@ -88,11 +92,10 @@ function Index() {
         setValues({ name: "", email: "", phone: "", query: "" });
         setErrors({});
       } else {
-        throw new Error("Request failed");
-      }
-
-      if (aiRes.status === "fulfilled") {
-        setAiResponse(aiRes.value.response);
+        toast.error("Webhook submission failed", {
+          description:
+            "Your AI preview is shown below, but we couldn't send the query to the backend. Please try again.",
+        });
       }
     } catch {
       toast.error("Submission failed", {
@@ -102,6 +105,7 @@ function Index() {
       setLoading(false);
       setAiLoading(false);
     }
+
   };
 
   return (
