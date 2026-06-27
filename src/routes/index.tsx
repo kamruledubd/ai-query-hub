@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { User, Mail, Phone, MessageSquare, Sparkles, Loader2, Send } from "lucide-react";
+import { User, Mail, Phone, MessageSquare, Sparkles, Loader2, Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { generateAIResponse } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -45,10 +47,15 @@ function Index() {
   const [values, setValues] = useState({ name: "", email: "", phone: "", query: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const generateResponse = useServerFn(generateAIResponse);
 
   const update = (field: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setValues((v) => ({ ...v, [field]: e.target.value }));
     if (errors[field]) setErrors((p) => ({ ...p, [field]: undefined }));
+    if (aiResponse) setAiResponse(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,25 +67,40 @@ function Index() {
       return;
     }
     setLoading(true);
+    setAiLoading(true);
+    setAiResponse(null);
+
     try {
-      const res = await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) throw new Error("Request failed");
-      toast.success("Query submitted successfully", {
-        description:
-          "Your query has been submitted successfully. Please check your email for the response.",
-      });
-      setValues({ name: "", email: "", phone: "", query: "" });
-      setErrors({});
+      const [webhookRes, aiRes] = await Promise.allSettled([
+        fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values),
+        }),
+        generateResponse({ data: { query: values.query } }),
+      ]);
+
+      if (webhookRes.status === "fulfilled" && webhookRes.value.ok) {
+        toast.success("Query submitted successfully", {
+          description:
+            "Your query has been submitted successfully. Please check your email for the response.",
+        });
+        setValues({ name: "", email: "", phone: "", query: "" });
+        setErrors({});
+      } else {
+        throw new Error("Request failed");
+      }
+
+      if (aiRes.status === "fulfilled") {
+        setAiResponse(aiRes.value.response);
+      }
     } catch {
       toast.error("Submission failed", {
         description: "Something went wrong. Please try again.",
       });
     } finally {
       setLoading(false);
+      setAiLoading(false);
     }
   };
 
@@ -185,7 +207,7 @@ function Index() {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
-                Submitting...
+                {aiLoading ? "Generating response..." : "Submitting..."}
               </>
             ) : (
               <>
@@ -195,6 +217,25 @@ function Index() {
             )}
           </Button>
         </form>
+
+        {aiResponse && (
+          <div className="mt-6 rounded-2xl border border-primary/20 bg-white/90 p-5 backdrop-blur-xl animate-scale-in">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Bot className="h-4 w-4 text-primary" aria-hidden="true" />
+              </div>
+              <h3 className="text-sm font-semibold text-foreground">AI Preview Response</h3>
+            </div>
+            <div className="prose prose-sm max-w-none text-foreground">
+              {aiResponse.split("\n").map((paragraph, idx) =>
+                paragraph ? <p key={idx} className="mb-2 last:mb-0">{paragraph}</p> : <br key={idx} />
+              )}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              A full response has also been sent to your email.
+            </p>
+          </div>
+        )}
       </section>
 
       <footer className="relative z-10 mt-8 text-xs text-white/75">

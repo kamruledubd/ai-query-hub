@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiSubmitQueryRouteImport } from './routes/api/submit-query'
+import { Route as ApiAiTestRouteImport } from './routes/api/ai-test'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +23,39 @@ const ApiSubmitQueryRoute = ApiSubmitQueryRouteImport.update({
   path: '/api/submit-query',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiTestRoute = ApiAiTestRouteImport.update({
+  id: '/api/ai-test',
+  path: '/api/ai-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/ai-test': typeof ApiAiTestRoute
   '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/ai-test': typeof ApiAiTestRoute
   '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/ai-test': typeof ApiAiTestRoute
   '/api/submit-query': typeof ApiSubmitQueryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/submit-query'
+  fullPaths: '/' | '/api/ai-test' | '/api/submit-query'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/submit-query'
-  id: '__root__' | '/' | '/api/submit-query'
+  to: '/' | '/api/ai-test' | '/api/submit-query'
+  id: '__root__' | '/' | '/api/ai-test' | '/api/submit-query'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAiTestRoute: typeof ApiAiTestRoute
   ApiSubmitQueryRoute: typeof ApiSubmitQueryRoute
 }
 
@@ -65,11 +75,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSubmitQueryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai-test': {
+      id: '/api/ai-test'
+      path: '/api/ai-test'
+      fullPath: '/api/ai-test'
+      preLoaderRoute: typeof ApiAiTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAiTestRoute: ApiAiTestRoute,
   ApiSubmitQueryRoute: ApiSubmitQueryRoute,
 }
 export const routeTree = rootRouteImport
